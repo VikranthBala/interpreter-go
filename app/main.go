@@ -21,6 +21,8 @@ const (
 
 	LESS    rune = '<'
 	GREATER rune = '>'
+
+	SLASH rune = '/'
 )
 
 func unexpectedTokenError(line int, char rune) string {
@@ -33,9 +35,13 @@ func tokenizeString(inp string) (tokens, errorTokens []string) {
 
 	// variable to say if we want to tokenize next character
 	var skipNextChar bool = false
+	var inSingleLineComment bool = false
 
 	line, inpLen := 1, len(inp)
 	for i, char := range inp {
+		if inSingleLineComment {
+			continue
+		}
 		if skipNextChar {
 			skipNextChar = false
 			continue
@@ -98,7 +104,18 @@ func tokenizeString(inp string) (tokens, errorTokens []string) {
 				}
 			}
 			tokens = append(tokens, "GREATER > null")
+		case SLASH:
+			if i+1 < inpLen {
+				if inp[i+1] == '/' {
+					inSingleLineComment = true
+					continue
+				}
+			}
+			tokens = append(tokens, "SLASH / null")
 		case '\n':
+			if inSingleLineComment {
+				inSingleLineComment = false
+			}
 			line++
 		default:
 			errorTokens = append(errorTokens, unexpectedTokenError(line, char))
