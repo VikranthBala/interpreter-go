@@ -89,7 +89,7 @@ func main() {
 		if len(errors) > 0 {
 			exitCode = 65
 			for _, err := range errors {
-				fmt.Fprintln(os.Stdout, err)
+				fmt.Fprintln(os.Stderr, err)
 			}
 		}
 		for _, token := range tokens {
