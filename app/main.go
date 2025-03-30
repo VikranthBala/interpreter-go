@@ -40,6 +40,10 @@ func tokenizeString(inp string) (tokens, errorTokens []string) {
 	line, inpLen := 1, len(inp)
 	for i, char := range inp {
 		if inSingleLineComment {
+			if char == '\n' {
+				inSingleLineComment = false
+				line++
+			}
 			continue
 		}
 		if skipNextChar {
@@ -117,6 +121,8 @@ func tokenizeString(inp string) (tokens, errorTokens []string) {
 				inSingleLineComment = false
 			}
 			line++
+		case ' ', '\t':
+			continue
 		default:
 			errorTokens = append(errorTokens, unexpectedTokenError(line, char))
 		}
