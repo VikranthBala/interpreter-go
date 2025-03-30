@@ -17,6 +17,7 @@ const (
 	PLUS        rune = '+'
 	SEMICOLON   rune = ';'
 	EQUAL       rune = '='
+	BANG        rune = '!'
 )
 
 func unexpectedTokenError(line int, char rune) string {
@@ -67,6 +68,15 @@ func tokenizeString(inp string) (tokens, errorTokens []string) {
 				}
 			}
 			tokens = append(tokens, "EQUAL = null")
+		case BANG:
+			if i+1 < inpLen {
+				if inp[i+1] == '=' {
+					tokens = append(tokens, "BANG_EQUAL != null")
+					skipNextChar = true
+					continue
+				}
+			}
+			tokens = append(tokens, "BANG ! null")
 		case '\n':
 			line++
 		default:
