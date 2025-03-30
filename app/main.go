@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 const (
@@ -29,6 +30,14 @@ func unexpectedTokenError(line int, char rune) string {
 	return fmt.Sprintf("[line %d] Error: Unexpected character: %c", line, char)
 }
 
+func unterminatedStringError(line int) string {
+	return fmt.Sprintf("[line %d] Error: Unterminated string.", line)
+}
+
+func getStringLiteralToken(literal string) string {
+	return fmt.Sprintf("STRING %s %s", literal, strings.Trim(literal, `"`))
+}
+
 func tokenizeString(inp string) (tokens, errorTokens []string) {
 
 	tokens, errorTokens = make([]string, 0), make([]string, 0)
@@ -36,9 +45,28 @@ func tokenizeString(inp string) (tokens, errorTokens []string) {
 	// variable to say if we want to tokenize next character
 	var skipNextChar bool = false
 	var inSingleLineComment bool = false
+	var inDQuotes bool = false
 
 	line, inpLen := 1, len(inp)
+	var strLiteralBuf strings.Builder
 	for i, char := range inp {
+
+		if inDQuotes {
+			if char == '\n' {
+				errorTokens = append(errorTokens, unterminatedStringError(line))
+				inDQuotes = false
+				line++
+			} else if char == '"' {
+				strLiteralBuf.WriteRune(char)
+				tokens = append(tokens, getStringLiteralToken(strLiteralBuf.String()))
+				strLiteralBuf.Reset()
+				inDQuotes = false
+			} else {
+				strLiteralBuf.WriteRune(char)
+			}
+			continue
+		}
+
 		if inSingleLineComment {
 			if char == '\n' {
 				inSingleLineComment = false
@@ -116,6 +144,16 @@ func tokenizeString(inp string) (tokens, errorTokens []string) {
 				}
 			}
 			tokens = append(tokens, "SLASH / null")
+		case '"':
+			if inDQuotes {
+				strLiteralBuf.WriteRune(char)
+				tokens = append(tokens, getStringLiteralToken(strLiteralBuf.String()))
+				strLiteralBuf.Reset()
+				inDQuotes = false
+				continue
+			}
+			inDQuotes = true
+			strLiteralBuf.WriteRune(char)
 		case '\n':
 			if inSingleLineComment {
 				inSingleLineComment = false
@@ -126,6 +164,9 @@ func tokenizeString(inp string) (tokens, errorTokens []string) {
 		default:
 			errorTokens = append(errorTokens, unexpectedTokenError(line, char))
 		}
+	}
+	if inDQuotes {
+		errorTokens = append(errorTokens, unterminatedStringError(line))
 	}
 	tokens = append(tokens, "EOF  null")
 	return
