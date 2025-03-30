@@ -38,6 +38,10 @@ func main() {
 				tokens = append(tokens, "LEFT_PAREN ( null")
 			case ')':
 				tokens = append(tokens, "RIGHT_PAREN ) null")
+			case '{':
+				tokens = append(tokens, "LEFT_BRACE { null")
+			case '}':
+				tokens = append(tokens, "RIGHT_BRACE } null")
 			}
 		}
 		tokens = append(tokens, "EOF  null")
