@@ -18,8 +18,15 @@ const (
 	SEMICOLON   rune = ';'
 )
 
+func unexpectedTokenError(line int, char rune) string {
+	return fmt.Sprintf("[line %d] Error: Unexpected character: %c", line, char)
+}
+
 func tokenizeString(inp string) (tokens []string) {
+
 	tokens = make([]string, 0)
+	errorTokens := make([]string, 0)
+	line := 1
 	for _, char := range inp {
 		switch char {
 		case LEFT_PAREN:
@@ -42,8 +49,13 @@ func tokenizeString(inp string) (tokens []string) {
 			tokens = append(tokens, "PLUS + null")
 		case SEMICOLON:
 			tokens = append(tokens, "SEMICOLON ; null")
+		case '\n':
+			line++
+		default:
+			errorTokens = append(errorTokens, unexpectedTokenError(line, char))
 		}
 	}
+	tokens = append(errorTokens, tokens...)
 	tokens = append(tokens, "EOF  null")
 	return
 }
