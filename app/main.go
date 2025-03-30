@@ -22,10 +22,9 @@ func unexpectedTokenError(line int, char rune) string {
 	return fmt.Sprintf("[line %d] Error: Unexpected character: %c", line, char)
 }
 
-func tokenizeString(inp string) (tokens []string) {
+func tokenizeString(inp string) (tokens, errorTokens []string) {
 
-	tokens = make([]string, 0)
-	errorTokens := make([]string, 0)
+	tokens, errorTokens = make([]string, 0), make([]string, 0)
 	line := 1
 	for _, char := range inp {
 		switch char {
@@ -55,7 +54,6 @@ func tokenizeString(inp string) (tokens []string) {
 			errorTokens = append(errorTokens, unexpectedTokenError(line, char))
 		}
 	}
-	tokens = append(errorTokens, tokens...)
 	tokens = append(tokens, "EOF  null")
 	return
 }
@@ -86,10 +84,18 @@ func main() {
 	}
 
 	if len(fileContents) > 0 {
-		tokens := tokenizeString(string(fileContents))
+		tokens, errors := tokenizeString(string(fileContents))
+		exitCode := 0
+		if len(errors) > 0 {
+			exitCode = 65
+			for _, err := range errors {
+				fmt.Fprintln(os.Stdout, err)
+			}
+		}
 		for _, token := range tokens {
 			fmt.Fprintln(os.Stdout, token)
 		}
+		os.Exit(exitCode)
 	} else {
 		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 	}
