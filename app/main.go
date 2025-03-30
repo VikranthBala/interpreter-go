@@ -16,6 +16,7 @@ const (
 	MINUS       rune = '-'
 	PLUS        rune = '+'
 	SEMICOLON   rune = ';'
+	EQUAL       rune = '='
 )
 
 func unexpectedTokenError(line int, char rune) string {
@@ -25,8 +26,17 @@ func unexpectedTokenError(line int, char rune) string {
 func tokenizeString(inp string) (tokens, errorTokens []string) {
 
 	tokens, errorTokens = make([]string, 0), make([]string, 0)
-	line := 1
-	for _, char := range inp {
+
+	// variable to say if we want to tokenize next character
+	var skipNextChar bool = false
+
+	line, inpLen := 1, len(inp)
+	for i, char := range inp {
+		if skipNextChar {
+			skipNextChar = false
+			continue
+		}
+
 		switch char {
 		case LEFT_PAREN:
 			tokens = append(tokens, "LEFT_PAREN ( null")
@@ -48,6 +58,15 @@ func tokenizeString(inp string) (tokens, errorTokens []string) {
 			tokens = append(tokens, "PLUS + null")
 		case SEMICOLON:
 			tokens = append(tokens, "SEMICOLON ; null")
+		case EQUAL:
+			if i+1 < inpLen {
+				if inp[i+1] == '=' {
+					tokens = append(tokens, "EQUAL_EQUAL == null")
+					skipNextChar = true
+					continue
+				}
+			}
+			tokens = append(tokens, "EQUAL = null")
 		case '\n':
 			line++
 		default:
