@@ -40,7 +40,7 @@ func main() {
 				tokens = append(tokens, "RIGHT_PAREN ) null")
 			}
 		}
-		tokens = append(tokens, "EOF null")
+		tokens = append(tokens, "EOF  null")
 
 		for _, token := range tokens {
 			fmt.Fprintln(os.Stdout, token)
